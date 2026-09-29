@@ -41,6 +41,7 @@ import { ChoosePathStep } from "./steps/choose-path";
 import { PracticeBasicsStep } from "./steps/practice-basics";
 import { BringDataStep } from "./steps/bring-data";
 import { AllSetStep } from "./steps/all-set";
+import { tx } from "@/lib/i18n";
 
 interface OnboardingJourneyContextValue {
   /** Open the "Make it yours" guided setup (resumes at the saved step). */
@@ -412,7 +413,7 @@ function JourneyShell({
       setIndex(null);
       if (state.hasPartialImport) {
         toast.success(
-          "Completed records are saved. Reopen setup or use Settings, then Data, to finish the remaining files.",
+          tx("Completed records are saved. Reopen setup or use Settings, then Data, to finish the remaining files."),
         );
       }
     } catch (err) {
@@ -445,9 +446,7 @@ function JourneyShell({
           onInteractOutside={(event) => event.preventDefault()}
           onPointerDownOutside={(event) => event.preventDefault()}
         >
-          <DialogPrimitive.Description className="sr-only">
-            Guided setup for your OpenVPM clinic.
-          </DialogPrimitive.Description>
+          <DialogPrimitive.Description className="sr-only">{tx("Guided setup for your OpenVPM clinic.")}</DialogPrimitive.Description>
           <div className="flex min-h-full items-center justify-center">
             <div
               className={cn(
@@ -465,13 +464,10 @@ function JourneyShell({
                     className="h-9 w-9 rounded-xl"
                     pawClassName="h-5 w-5"
                   />
-                  <span className="font-heading text-lg font-semibold tracking-tight">
-                    OpenVPM
-                  </span>
+                  <span className="font-heading text-lg font-semibold tracking-tight">{tx("OpenVPM")}</span>
                 </div>
                 <div className="flex min-w-[132px] items-center gap-3 sm:min-w-[230px]">
-                  <span className="shrink-0 text-xs font-medium text-slate-500">
-                    Step {index + 1} of {total}
+                  <span className="shrink-0 text-xs font-medium text-slate-500">{tx("Step")}{" "}{index + 1}{" "}{tx("of")}{" "}{total}
                   </span>
                   <div className="flex flex-1 gap-1.5" aria-hidden="true">
                     {steps.map((s, i) => (
@@ -550,14 +546,10 @@ function JourneyShell({
                               : undefined
                           }
                         >
-                          <ArrowLeft className="mr-1.5 h-4 w-4" />
-                          Back
-                        </Button>
+                          <ArrowLeft className="mr-1.5 h-4 w-4" />{tx("Back")}</Button>
                       ) : (
                         <span className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
-                          <ShieldCheck className="h-4 w-4 text-primary" />
-                          You can change this later.
-                        </span>
+                          <ShieldCheck className="h-4 w-4 text-primary" />{tx("You can change this later.")}</span>
                       )}
                       {!isLast ? (
                         <button
@@ -567,8 +559,8 @@ function JourneyShell({
                           className="min-h-10 rounded-lg px-2 text-sm font-medium text-slate-500 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                         >
                           {state.hasPartialImport
-                            ? "Finish remaining import later"
-                            : "I'll finish later"}
+                            ? tx("Finish remaining import later")
+                            : tx("I'll finish later")}
                         </button>
                       ) : null}
                     </div>
@@ -576,10 +568,7 @@ function JourneyShell({
                       <p
                         id="onboarding-back-disabled-reason"
                         className="max-w-sm text-xs leading-5 text-slate-500"
-                      >
-                        Back is unavailable after records are saved. Finish the
-                        remaining import now or continue it later.
-                      </p>
+                      >{tx("Back is unavailable after records are saved. Finish the remaining import now or continue it later.")}</p>
                     ) : null}
                   </div>
 
@@ -592,7 +581,7 @@ function JourneyShell({
                     {busy ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : null}
-                    {continueLabel ?? (isLast ? "Finish" : "Continue")}
+                    {continueLabel ?? (isLast ? tx("Finish") : tx("Continue"))}
                     {!busy ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
                   </Button>
                 </div>

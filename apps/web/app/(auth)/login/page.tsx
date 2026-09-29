@@ -19,6 +19,7 @@ import {
 import { trackFunnelEvent } from "@/lib/track-funnel-event";
 import { getFunnelVisitorId, useFunnelVisitorId } from "@/lib/funnel-visitor";
 import { safeAuthNextPath } from "@/lib/auth-redirect";
+import { tx } from "@/lib/i18n";
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE?.trim() === "true";
 
@@ -137,13 +138,11 @@ function LoginPageInner() {
           <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <PawMark className="h-6 w-6" />
           </span>
-          <h1 className="font-heading text-2xl font-bold text-foreground">
-            OpenVPM
-          </h1>
+          <h1 className="font-heading text-2xl font-bold text-foreground">{tx("OpenVPM")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {DEMO_MODE
-              ? "Explore the live product"
-              : "Sign in to your practice"}
+              ? tx("Explore the live product")
+              : tx("Sign in to your practice")}
           </p>
         </div>
 
@@ -157,14 +156,8 @@ function LoginPageInner() {
 
         {DEMO_MODE && (
           <div className="mb-6 rounded-md border border-primary/20 bg-primary/5 p-4">
-            <p className="mb-1 text-sm font-semibold text-foreground">
-              Immediate access to the live demo
-            </p>
-            <p className="text-xs leading-5 text-muted-foreground">
-              No call, sales form, or credit card. We use your email to protect
-              this shared sandbox from automated abuse. We may send one brief
-              email asking what you thought; unsubscribe anytime.
-            </p>
+            <p className="mb-1 text-sm font-semibold text-foreground">{tx("Immediate access to the live demo")}</p>
+            <p className="text-xs leading-5 text-muted-foreground">{tx("No call, sales form, or credit card. We use your email to protect this shared sandbox from automated abuse. We may send one brief email asking what you thought; unsubscribe anytime.")}</p>
           </div>
         )}
 
@@ -179,9 +172,7 @@ function LoginPageInner() {
             <label
               htmlFor="email"
               className="mb-1.5 block text-sm font-medium text-foreground"
-            >
-              Email
-            </label>
+            >{tx("Email")}</label>
             <input
               id="email"
               type="email"
@@ -200,9 +191,7 @@ function LoginPageInner() {
               <label
                 htmlFor="password"
                 className="mb-1.5 block text-sm font-medium text-foreground"
-              >
-                Password
-              </label>
+              >{tx("Password")}</label>
               <input
                 id="password"
                 type="password"
@@ -211,7 +200,7 @@ function LoginPageInner() {
                 required
                 maxLength={AUTH_PASSWORD_MAX_LENGTH}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="Enter your password"
+                placeholder={tx("Enter your password")}
               />
             </div>
           )}
@@ -223,11 +212,11 @@ function LoginPageInner() {
           >
             {loading
               ? DEMO_MODE
-                ? "Opening demo..."
-                : "Signing in..."
+                ? tx("Opening demo...")
+                : tx("Signing in...")
               : DEMO_MODE
-                ? "Open the live demo"
-                : "Sign in"}
+                ? tx("Open the live demo")
+                : tx("Sign in")}
           </button>
         </form>
 
@@ -236,13 +225,10 @@ function LoginPageInner() {
             <Link
               href="/forgot-password"
               className="text-primary hover:underline"
-            >
-              Forgot your password?
-            </Link>
+            >{tx("Forgot your password?")}</Link>
           </p>
         )}
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+        <p className="mt-2 text-center text-sm text-muted-foreground">{tx("Don't have an account?")}{" "}
           {DEMO_MODE ? (
             <a
               href={buildCloudSignupUrl({
@@ -259,9 +245,7 @@ function LoginPageInner() {
                 })
               }
               className="text-primary hover:underline"
-            >
-              Start my clinic
-            </a>
+            >{tx("Start my clinic")}</a>
           ) : (
             <Link
               href={
@@ -270,9 +254,7 @@ function LoginPageInner() {
                   : `/register?next=${encodeURIComponent(nextPath)}`
               }
               className="text-primary hover:underline"
-            >
-              Register your practice
-            </Link>
+            >{tx("Register your practice")}</Link>
           )}
         </p>
       </div>
