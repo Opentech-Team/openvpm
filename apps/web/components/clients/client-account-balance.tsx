@@ -97,6 +97,8 @@ export function ClientAccountBalance({ clientId }: { clientId: string }) {
     {
       enabled: Boolean(clientId),
       staleTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
       refetchInterval: 60_000,
     },
   );

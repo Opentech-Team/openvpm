@@ -162,4 +162,28 @@ describe("client balance query and refresh", () => {
     );
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*aria-label="Refresh client balance"/);
   });
+
+  it("overrides the app's disabled focus refetch for current balance reads", () => {
+    mocks.useQuery.mockReturnValue({
+      data: syntheticBalance,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    renderToStaticMarkup(
+      createElement(ClientAccountBalance, { clientId: "client-a" }),
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      { clientId: "client-a" },
+      {
+        enabled: true,
+        staleTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
+        refetchInterval: 60_000,
+      },
+    );
+  });
 });
