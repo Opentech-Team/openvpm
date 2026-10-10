@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+// Wraps hard-coded English UI copy in tx("...") so it can be translated.
+// Originally written by Atsushi Kojima for the Japanese localization
+// (katsushi2441/openvpm-jp, jp/scripts/wrap-strings.mjs); moved here so every
+// language can use it. Usage: node scripts/i18n/wrap-strings.mjs [--dry] [--list out.json] [files...]
+//
 // 直書きの英語の文言を tx("...") で包む一括変換（日本語化キット用）。
 //
 // 対象（apps/web の .tsx。テストは除く）:
@@ -8,12 +13,13 @@
 //   4) 表示用のキーの値          { label: "Dashboard" }         → { label: tx("Dashboard") }
 // 文言そのものを鍵にするので、訳が無ければ英語のまま表示される（docs/I18N.md の English fallback）。
 //
-// 使い方: node jp/scripts/wrap-strings.mjs [--dry] [--list out.json] [ファイル...]
+// 使い方: node scripts/i18n/wrap-strings.mjs [--dry] [--list out.json] [ファイル...]
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const WEB = path.join(ROOT, "apps/web");
 const require = createRequire(path.join(WEB, "package.json"));
 const ts = require("typescript");

@@ -22,6 +22,14 @@ COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
+# UI language is inlined at build time (NEXT_PUBLIC_*), e.g.
+#   --build-arg NEXT_PUBLIC_OPENVPM_LANGUAGE=es
+ARG NEXT_PUBLIC_OPENVPM_LANGUAGE=en
+ENV NEXT_PUBLIC_OPENVPM_LANGUAGE=$NEXT_PUBLIC_OPENVPM_LANGUAGE
+# Lets small hosts raise the Node heap for the build, e.g.
+#   --build-arg NODE_OPTIONS=--max-old-space-size=3072
+ARG NODE_OPTIONS
+ENV NODE_OPTIONS=$NODE_OPTIONS
 RUN pnpm build --filter=@openpims/web
 
 # --- Runner ---
