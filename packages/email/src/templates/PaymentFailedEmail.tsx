@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { InfoCard } from "../components/InfoCard";
 import { Heading, Paragraph, Label, Stat } from "../components/Typography";
 import type { Brand } from "../brand";
+import { identity, tNodes, type Translate } from "../i18n";
 
 export interface PaymentFailedEmailProps {
   brand: Brand;
@@ -12,6 +13,7 @@ export interface PaymentFailedEmailProps {
   amount: string; // e.g. "$79.00"
   nextRetryDate?: string; // e.g. "July 3, 2026"
   billingUrl: string;
+  t?: Translate;
 }
 
 export function PaymentFailedEmail({
@@ -20,36 +22,48 @@ export function PaymentFailedEmail({
   amount,
   nextRetryDate,
   billingUrl,
+  t = identity,
 }: PaymentFailedEmailProps) {
   return (
     <EmailLayout
       brand={brand}
-      preview="Your OpenVPM payment didn't go through — update your billing"
+      preview={t(
+        "Your OpenVPM payment didn't go through — update your billing",
+      )}
+      t={t}
     >
-      <Heading>Your payment didn&apos;t go through</Heading>
+      <Heading>{t("Your payment didn't go through")}</Heading>
       <Paragraph>
-        Hi {practiceName}, we couldn&apos;t process your latest OpenVPM payment
-        of <strong>{amount}</strong>. This usually means a card expired or was
-        replaced — it&apos;s a quick fix.
+        {tNodes(
+          t,
+          "Hi {practiceName}, we couldn't process your latest OpenVPM payment of {amount}. This usually means a card expired or was replaced — it's a quick fix.",
+          { practiceName },
+          { amount: <strong>{amount}</strong> },
+        )}
       </Paragraph>
 
       <InfoCard tone="danger">
-        <Label>What happens next</Label>
+        <Label>{t("What happens next")}</Label>
         <Paragraph>
           {nextRetryDate
-            ? `We'll automatically try again on ${nextRetryDate}. Update your card before then to avoid any interruption.`
-            : "Update your card to keep your workspace active and avoid any interruption."}
+            ? t(
+                "We'll automatically try again on {nextRetryDate}. Update your card before then to avoid any interruption.",
+                { nextRetryDate },
+              )
+            : t(
+                "Update your card to keep your workspace active and avoid any interruption.",
+              )}
         </Paragraph>
       </InfoCard>
 
       <Section style={{ margin: "8px 0" }}>
-        <Button href={billingUrl}>Update billing</Button>
+        <Button href={billingUrl}>{t("Update billing")}</Button>
       </Section>
 
       <Paragraph muted>
-        Your data is safe. If a payment ultimately doesn&apos;t clear, your
-        workspace becomes read-only — nothing is deleted, and reactivating takes
-        one click. Need a hand? Just reply to this email.
+        {t(
+          "Your data is safe. If a payment ultimately doesn't clear, your workspace becomes read-only — nothing is deleted, and reactivating takes one click. Need a hand? Just reply to this email.",
+        )}
       </Paragraph>
     </EmailLayout>
   );

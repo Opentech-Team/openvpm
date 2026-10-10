@@ -13,6 +13,7 @@ import {
   emailPreferenceRecipientHash,
 } from "@/lib/email-preferences";
 import { billingEnforced } from "@/lib/billing/plans";
+import { tx } from "@/lib/i18n";
 import {
   defaultEmailFrom,
   emailDemoMode,
@@ -338,7 +339,10 @@ export async function sendAppointmentReminder(data: {
 
   const result = await sendEmail({
     to: data.to,
-    subject: `Appointment Reminder for ${data.patientName} – ${data.appointmentDate}`,
+    subject: tx("Appointment Reminder for {patientName} – {appointmentDate}", {
+      patientName: data.patientName,
+      appointmentDate: data.appointmentDate,
+    }),
     html,
   });
 
@@ -385,7 +389,10 @@ export async function sendVaccinationReminder(data: {
 
   const result = await sendEmail({
     to: data.to,
-    subject: `Vaccination Reminder: ${data.vaccineName} for ${data.patientName}`,
+    subject: tx("Vaccination Reminder: {vaccineName} for {patientName}", {
+      vaccineName: data.vaccineName,
+      patientName: data.patientName,
+    }),
     html,
   });
 
@@ -434,7 +441,9 @@ export async function sendCareReminder(data: {
   );
   const result = await sendEmail({
     to: data.to,
-    subject: `Care Reminder for ${data.patientName}`,
+    subject: tx("Care Reminder for {patientName}", {
+      patientName: data.patientName,
+    }),
     html,
     idempotencyKey: data.idempotencyKey,
   });
@@ -489,7 +498,10 @@ export async function sendInvoiceEmail(data: {
 
   const result = await sendEmail({
     to: data.to,
-    subject: `Invoice from ${data.practiceName} – ${data.invoiceTotal}`,
+    subject: tx("Invoice from {practiceName} – {invoiceTotal}", {
+      practiceName: data.practiceName,
+      invoiceTotal: data.invoiceTotal,
+    }),
     html,
   });
 
@@ -542,7 +554,9 @@ export async function sendClientPaymentReceiptEmail(data: {
 
   const result = await sendEmail({
     to: data.to,
-    subject: `Payment received – ${data.practiceName}`,
+    subject: tx("Payment received – {practiceName}", {
+      practiceName: data.practiceName,
+    }),
     html,
   });
 
@@ -567,7 +581,7 @@ function verificationEmailContent(data: VerificationEmailData) {
     <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">This link expires in 24 hours. If you didn't create an OpenVPM account, you can ignore this email.</p>
   `;
   const html = emailLayout("OpenVPM", body);
-  return { subject: "Verify your OpenVPM email", html };
+  return { subject: tx("Verify your OpenVPM email"), html };
 }
 
 export async function sendVerificationEmail(
@@ -614,7 +628,7 @@ export async function sendPasswordResetEmail(data: {
   const html = emailLayout("OpenVPM", body);
   const result = await sendEmail({
     to: data.to,
-    subject: "Reset your OpenVPM password",
+    subject: tx("Reset your OpenVPM password"),
     html,
   });
   return { success: result.success };
@@ -636,7 +650,9 @@ export async function sendStaffInviteEmail(data: {
   const html = emailLayout(data.practiceName, body);
   const result = await sendEmail({
     to: data.to,
-    subject: `You're invited to join ${data.practiceName} on OpenVPM`,
+    subject: tx("You're invited to join {practiceName} on OpenVPM", {
+      practiceName: data.practiceName,
+    }),
     html,
     idempotencyKey: data.idempotencyKey,
   });
@@ -674,6 +690,7 @@ export async function sendWelcomeEmail(data: {
   }
   const { subject, html } = await renderWelcomeEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     trialDays: data.trialDays ?? 14,
     billingRequired: data.billingRequired,
@@ -720,6 +737,7 @@ export async function sendSetupRecoveryEmail(data: {
   }
   const { subject, html } = await renderSetupRecoveryEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     stepTitle: data.stepTitle,
     nextAction: data.nextAction,
@@ -771,6 +789,7 @@ export async function sendTrialEndingEmail(data: {
   }
   const { subject, html } = await renderTrialEndingEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     daysLeft: data.daysLeft,
     trialEndDate: data.trialEndDate,
@@ -821,6 +840,7 @@ export async function sendFirstClinicWinEmail(data: {
   }
   const { subject, html } = await renderFirstClinicWinEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     trialEndDate: data.trialEndDate,
     billingUrl,
@@ -851,6 +871,7 @@ export async function sendPaymentReceiptEmail(data: {
   const brand = openvpmBrand();
   const { subject, html } = await renderPaymentReceiptEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     amount: data.amount,
     periodLabel: data.periodLabel,
@@ -878,6 +899,7 @@ export async function sendPaymentFailedEmail(data: {
   const billingUrl = data.billingUrl ?? `${brand.appUrl}/settings?tab=billing`;
   const { subject, html } = await renderPaymentFailedEmail({
     brand,
+    t: tx,
     practiceName: data.practiceName,
     amount: data.amount,
     nextRetryDate: data.nextRetryDate,

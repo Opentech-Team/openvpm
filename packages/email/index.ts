@@ -4,6 +4,8 @@ export { openvpmBrand } from "./src/brand";
 export type { Brand } from "./src/brand";
 export { theme } from "./src/theme";
 export * from "./src/render";
+export { identity } from "./src/i18n";
+export type { Translate } from "./src/i18n";
 export type { WelcomeEmailProps } from "./src/templates/WelcomeEmail";
 export type { TrialEndingEmailProps } from "./src/templates/TrialEndingEmail";
 export type { SetupRecoveryEmailProps } from "./src/templates/SetupRecoveryEmail";

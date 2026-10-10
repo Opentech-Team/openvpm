@@ -14,6 +14,7 @@ import {
 import { theme } from "../theme";
 import type { Brand } from "../brand";
 import { Footer } from "./Footer";
+import { identity, type Translate } from "../i18n";
 
 /**
  * The single branded shell every OpenVPM email uses: soft slate page, a brand
@@ -25,12 +26,14 @@ export function EmailLayout({
   preview,
   unsubscribeUrl,
   recipientReason,
+  t = identity,
   children,
 }: {
   brand: Brand;
   preview: string;
   unsubscribeUrl?: string;
   recipientReason?: string;
+  t?: Translate;
   children: React.ReactNode;
 }) {
   return (
@@ -115,6 +118,7 @@ export function EmailLayout({
             brand={brand}
             unsubscribeUrl={unsubscribeUrl}
             recipientReason={recipientReason}
+            t={t}
           />
         </Container>
       </Body>

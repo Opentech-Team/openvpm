@@ -2,6 +2,7 @@ import * as React from "react";
 import { Section, Text, Link } from "@react-email/components";
 import { theme } from "../theme";
 import type { Brand } from "../brand";
+import { identity, type Translate } from "../i18n";
 
 /**
  * Footer with company identity + support contact. For promotional nudges
@@ -12,10 +13,12 @@ export function Footer({
   brand,
   unsubscribeUrl,
   recipientReason,
+  t = identity,
 }: {
   brand: Brand;
   unsubscribeUrl?: string;
   recipientReason?: string;
+  t?: Translate;
 }) {
   return (
     <Section style={{ padding: "24px 8px 0" }}>
@@ -53,7 +56,7 @@ export function Footer({
         }}
       >
         {recipientReason ??
-          "You're receiving this because your clinic uses OpenVPM."}
+          t("You're receiving this because your clinic uses OpenVPM.")}
         {unsubscribeUrl ? (
           <>
             {"  "}
@@ -61,7 +64,7 @@ export function Footer({
               href={unsubscribeUrl}
               style={{ color: theme.faint, textDecoration: "underline" }}
             >
-              Manage email preferences
+              {t("Manage email preferences")}
             </Link>
             .
           </>

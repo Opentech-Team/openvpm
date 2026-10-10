@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { InfoCard } from "../components/InfoCard";
 import { Heading, Paragraph, Label, Stat } from "../components/Typography";
 import type { Brand } from "../brand";
+import { identity, type Translate } from "../i18n";
 
 export interface PaymentReceiptEmailProps {
   brand: Brand;
@@ -12,6 +13,7 @@ export interface PaymentReceiptEmailProps {
   amount: string; // e.g. "$79.00"
   periodLabel: string; // e.g. "Jun 10 – Jul 10, 2026"
   invoiceUrl?: string;
+  t?: Translate;
 }
 
 export function PaymentReceiptEmail({
@@ -20,26 +22,30 @@ export function PaymentReceiptEmail({
   amount,
   periodLabel,
   invoiceUrl,
+  t = identity,
 }: PaymentReceiptEmailProps) {
   return (
     <EmailLayout
       brand={brand}
-      preview={`Your OpenVPM receipt — ${amount}`}
+      preview={t("Your OpenVPM receipt — {amount}", { amount })}
+      t={t}
     >
-      <Heading>Payment received</Heading>
+      <Heading>{t("Payment received")}</Heading>
       <Paragraph>
-        Thanks, {practiceName}. We&apos;ve received your payment — here are the
-        details for your records.
+        {t(
+          "Thanks, {practiceName}. We've received your payment — here are the details for your records.",
+          { practiceName },
+        )}
       </Paragraph>
 
       <InfoCard tone="success">
         <Row>
           <Column>
-            <Label>Amount paid</Label>
+            <Label>{t("Amount paid")}</Label>
             <Stat>{amount}</Stat>
           </Column>
           <Column style={{ textAlign: "right", verticalAlign: "top" }}>
-            <Label>Billing period</Label>
+            <Label>{t("Billing period")}</Label>
             <Paragraph>{periodLabel}</Paragraph>
           </Column>
         </Row>
@@ -47,13 +53,14 @@ export function PaymentReceiptEmail({
 
       {invoiceUrl ? (
         <Section style={{ margin: "8px 0" }}>
-          <Button href={invoiceUrl}>View invoice</Button>
+          <Button href={invoiceUrl}>{t("View invoice")}</Button>
         </Section>
       ) : null}
 
       <Paragraph muted>
-        You can review every invoice and update your payment method anytime in
-        billing settings. Questions? Just reply to this email.
+        {t(
+          "You can review every invoice and update your payment method anytime in billing settings. Questions? Just reply to this email.",
+        )}
       </Paragraph>
     </EmailLayout>
   );

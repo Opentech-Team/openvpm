@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { InfoCard } from "../components/InfoCard";
 import { Heading, Label, Paragraph, Stat } from "../components/Typography";
 import type { Brand } from "../brand";
+import { identity, type Translate } from "../i18n";
 
 export interface FirstClinicWinEmailProps {
   brand: Brand;
@@ -12,6 +13,7 @@ export interface FirstClinicWinEmailProps {
   trialEndDate: string;
   billingUrl: string;
   unsubscribeUrl?: string;
+  t?: Translate;
 }
 
 /** A PHI-free celebration sent only after the first completed real visit. */
@@ -21,41 +23,50 @@ export function FirstClinicWinEmail({
   trialEndDate,
   billingUrl,
   unsubscribeUrl,
+  t = identity,
 }: FirstClinicWinEmailProps) {
   return (
     <EmailLayout
       brand={brand}
-      preview="Your team completed its first real visit in OpenVPM."
+      preview={t("Your team completed its first real visit in OpenVPM.")}
       unsubscribeUrl={unsubscribeUrl}
-      recipientReason={`This is the verified OpenVPM administrator address saved for ${practiceName}.`}
+      recipientReason={t(
+        "This is the verified OpenVPM administrator address saved for {practiceName}.",
+        { practiceName },
+      )}
+      t={t}
     >
-      <Heading>You ran your first real visit.</Heading>
+      <Heading>{t("You ran your first real visit.")}</Heading>
       <Paragraph>
-        Your team just took OpenVPM through a real clinic workflow—not a demo or
-        a setup checklist. That&apos;s a meaningful first win.
+        {t(
+          "Your team just took OpenVPM through a real clinic workflow—not a demo or a setup checklist. That's a meaningful first win.",
+        )}
       </Paragraph>
 
       <InfoCard tone="success">
-        <Label>Your supported trial</Label>
-        <Stat>Runs through {trialEndDate}</Stat>
+        <Label>{t("Your supported trial")}</Label>
+        <Stat>{t("Runs through {trialEndDate}", { trialEndDate })}</Stat>
         <Paragraph muted>
-          Keep validating the workflow with your team. A card is not required
-          during this supported trial.
+          {t(
+            "Keep validating the workflow with your team. A card is not required during this supported trial.",
+          )}
         </Paragraph>
       </InfoCard>
 
       <Paragraph>
-        When the clinic is ready, add billing once and the workspace can keep
-        moving without an interruption at the end of the trial.
+        {t(
+          "When the clinic is ready, add billing once and the workspace can keep moving without an interruption at the end of the trial.",
+        )}
       </Paragraph>
 
       <Section style={{ margin: "8px 0" }}>
-        <Button href={billingUrl}>Review billing</Button>
+        <Button href={billingUrl}>{t("Review billing")}</Button>
       </Section>
 
       <Paragraph muted>
-        Questions or something that did not fit the way your clinic works? Reply
-        and tell us. We&apos;re building this with clinics like yours.
+        {t(
+          "Questions or something that did not fit the way your clinic works? Reply and tell us. We're building this with clinics like yours.",
+        )}
       </Paragraph>
     </EmailLayout>
   );

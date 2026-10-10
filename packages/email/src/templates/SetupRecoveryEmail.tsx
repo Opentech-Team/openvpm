@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { InfoCard } from "../components/InfoCard";
 import { Heading, Label, Paragraph } from "../components/Typography";
 import type { Brand } from "../brand";
+import { identity, type Translate } from "../i18n";
 
 export interface SetupRecoveryEmailProps {
   brand: Brand;
@@ -14,6 +15,7 @@ export interface SetupRecoveryEmailProps {
   resumeUrl: string;
   attemptNumber: 1 | 2;
   unsubscribeUrl?: string;
+  t?: Translate;
 }
 
 export function SetupRecoveryEmail({
@@ -24,37 +26,46 @@ export function SetupRecoveryEmail({
   resumeUrl,
   attemptNumber,
   unsubscribeUrl,
+  t = identity,
 }: SetupRecoveryEmailProps) {
   return (
     <EmailLayout
       brand={brand}
-      preview={`Resume ${practiceName} at ${stepTitle}`}
+      preview={t("Resume {practiceName} at {stepTitle}", {
+        practiceName,
+        stepTitle,
+      })}
       unsubscribeUrl={unsubscribeUrl}
-      recipientReason="You're receiving this because you started an OpenVPM trial."
+      recipientReason={t(
+        "You're receiving this because you started an OpenVPM trial.",
+      )}
+      t={t}
     >
       <Heading>
         {attemptNumber === 1
-          ? "Your clinic workspace is ready"
-          : `Can we help with ${stepTitle}?`}
+          ? t("Your clinic workspace is ready")
+          : t("Can we help with {stepTitle}?", { stepTitle })}
       </Heading>
       <Paragraph>
-        {practiceName} is saved exactly where you left it. OpenVPM will take you
-        straight back to the next setup step—no call or credit card required.
+        {t(
+          "{practiceName} is saved exactly where you left it. OpenVPM will take you straight back to the next setup step—no call or credit card required.",
+          { practiceName },
+        )}
       </Paragraph>
 
       <InfoCard tone="brand">
-        <Label>Next step: {stepTitle}</Label>
+        <Label>{t("Next step: {stepTitle}", { stepTitle })}</Label>
         <Paragraph>{nextAction}</Paragraph>
       </InfoCard>
 
       <Section style={{ margin: "28px 0 8px" }}>
-        <Button href={resumeUrl}>Resume clinic setup</Button>
+        <Button href={resumeUrl}>{t("Resume clinic setup")}</Button>
       </Section>
 
       <Paragraph muted>
-        If you would rather have help, reply to this email. For an existing PIMS
-        export, we will arrange a private transfer review—please do not email
-        patient files or use a public sharing link.
+        {t(
+          "If you would rather have help, reply to this email. For an existing PIMS export, we will arrange a private transfer review—please do not email patient files or use a public sharing link.",
+        )}
       </Paragraph>
     </EmailLayout>
   );

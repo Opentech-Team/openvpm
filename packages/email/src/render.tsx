@@ -21,6 +21,7 @@ import {
   FirstClinicWinEmail,
   type FirstClinicWinEmailProps,
 } from "./templates/FirstClinicWinEmail";
+import { identity } from "./i18n";
 
 export interface RenderedEmail {
   subject: string;
@@ -30,8 +31,11 @@ export interface RenderedEmail {
 export async function renderWelcomeEmail(
   p: WelcomeEmailProps,
 ): Promise<RenderedEmail> {
+  const t = p.t ?? identity;
   return {
-    subject: `Welcome to OpenVPM, ${p.practiceName}`,
+    subject: t("Welcome to OpenVPM, {practiceName}", {
+      practiceName: p.practiceName,
+    }),
     html: await render(<WelcomeEmail {...p} />),
   };
 }
@@ -39,9 +43,14 @@ export async function renderWelcomeEmail(
 export async function renderTrialEndingEmail(
   p: TrialEndingEmailProps,
 ): Promise<RenderedEmail> {
-  const when = p.daysLeft <= 1 ? "tomorrow" : `in ${p.daysLeft} days`;
+  const t = p.t ?? identity;
   return {
-    subject: `Your OpenVPM trial ends ${when}`,
+    subject:
+      p.daysLeft <= 1
+        ? t("Your OpenVPM trial ends tomorrow")
+        : t("Your OpenVPM trial ends in {daysLeft} days", {
+            daysLeft: p.daysLeft,
+          }),
     html: await render(<TrialEndingEmail {...p} />),
   };
 }
@@ -49,11 +58,14 @@ export async function renderTrialEndingEmail(
 export async function renderSetupRecoveryEmail(
   p: SetupRecoveryEmailProps,
 ): Promise<RenderedEmail> {
+  const t = p.t ?? identity;
   return {
     subject:
       p.attemptNumber === 1
-        ? `Resume setup for ${p.practiceName}`
-        : `Can we help with ${p.stepTitle}?`,
+        ? t("Resume setup for {practiceName}", {
+            practiceName: p.practiceName,
+          })
+        : t("Can we help with {stepTitle}?", { stepTitle: p.stepTitle }),
     html: await render(<SetupRecoveryEmail {...p} />),
   };
 }
@@ -61,8 +73,9 @@ export async function renderSetupRecoveryEmail(
 export async function renderPaymentReceiptEmail(
   p: PaymentReceiptEmailProps,
 ): Promise<RenderedEmail> {
+  const t = p.t ?? identity;
   return {
-    subject: `Your OpenVPM receipt — ${p.amount}`,
+    subject: t("Your OpenVPM receipt — {amount}", { amount: p.amount }),
     html: await render(<PaymentReceiptEmail {...p} />),
   };
 }
@@ -70,8 +83,9 @@ export async function renderPaymentReceiptEmail(
 export async function renderPaymentFailedEmail(
   p: PaymentFailedEmailProps,
 ): Promise<RenderedEmail> {
+  const t = p.t ?? identity;
   return {
-    subject: "Action needed: your OpenVPM payment didn't go through",
+    subject: t("Action needed: your OpenVPM payment didn't go through"),
     html: await render(<PaymentFailedEmail {...p} />),
   };
 }
@@ -79,8 +93,9 @@ export async function renderPaymentFailedEmail(
 export async function renderFirstClinicWinEmail(
   p: FirstClinicWinEmailProps,
 ): Promise<RenderedEmail> {
+  const t = p.t ?? identity;
   return {
-    subject: "Your first real OpenVPM visit is complete",
+    subject: t("Your first real OpenVPM visit is complete"),
     html: await render(<FirstClinicWinEmail {...p} />),
   };
 }

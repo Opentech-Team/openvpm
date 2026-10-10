@@ -6,6 +6,7 @@ import { InfoCard } from "../components/InfoCard";
 import { Heading, Paragraph, Label } from "../components/Typography";
 import { theme } from "../theme";
 import type { Brand } from "../brand";
+import { identity, type Translate } from "../i18n";
 
 export interface WelcomeEmailProps {
   brand: Brand;
@@ -13,13 +14,8 @@ export interface WelcomeEmailProps {
   trialDays: number;
   billingRequired?: boolean;
   unsubscribeUrl?: string;
+  t?: Translate;
 }
-
-const STEPS = [
-  "Take the 60-second tour of the schedule, records, and billing.",
-  "Make it yours: add your logo, accent color, and invite your team.",
-  "Ask the AI assistant something, like “which pets are overdue for vaccines?”",
-];
 
 export function WelcomeEmail({
   brand,
@@ -27,38 +23,64 @@ export function WelcomeEmail({
   trialDays,
   billingRequired = false,
   unsubscribeUrl,
+  t = identity,
 }: WelcomeEmailProps) {
+  const steps = [
+    t("Take the 60-second tour of the schedule, records, and billing."),
+    t("Make it yours: add your logo, accent color, and invite your team."),
+    t(
+      "Ask the AI assistant something, like “which pets are overdue for vaccines?”",
+    ),
+  ];
   return (
     <EmailLayout
       brand={brand}
       preview={billingRequired
-        ? `Welcome to OpenVPM — complete billing to start your ${trialDays}-day trial`
-        : `Welcome to OpenVPM — your ${trialDays}-day trial is ready`}
+        ? t(
+            "Welcome to OpenVPM — complete billing to start your {trialDays}-day trial",
+            { trialDays },
+          )
+        : t("Welcome to OpenVPM — your {trialDays}-day trial is ready", {
+            trialDays,
+          })}
       unsubscribeUrl={unsubscribeUrl}
-      recipientReason="You're receiving this because you created an OpenVPM account."
+      recipientReason={t(
+        "You're receiving this because you created an OpenVPM account.",
+      )}
+      t={t}
     >
-      <Heading>Welcome to OpenVPM 🎉</Heading>
+      <Heading>{t("Welcome to OpenVPM 🎉")}</Heading>
       <Paragraph>
-        Hi {practiceName}, your account has been created. Your workspace includes
-        sample clients, pets, and appointments to help you explore OpenVPM.
+        {t(
+          "Hi {practiceName}, your account has been created. Your workspace includes sample clients, pets, and appointments to help you explore OpenVPM.",
+          { practiceName },
+        )}
       </Paragraph>
       <Paragraph muted>
         {billingRequired
-          ? `Complete secure Stripe checkout to start your ${trialDays}-day free trial. A card is required, with no subscription charge today. Billing starts automatically after the trial; review the price and charge date at checkout, and cancel in Settings → Plan & Billing before the trial ends to avoid a subscription charge. If you already completed checkout, sign in to your workspace.`
-          : `Your ${trialDays}-day trial is ready. Your data is always yours to export.`}
+          ? t(
+              "Complete secure Stripe checkout to start your {trialDays}-day free trial. A card is required, with no subscription charge today. Billing starts automatically after the trial; review the price and charge date at checkout, and cancel in Settings → Plan & Billing before the trial ends to avoid a subscription charge. If you already completed checkout, sign in to your workspace.",
+              { trialDays },
+            )
+          : t(
+              "Your {trialDays}-day trial is ready. Your data is always yours to export.",
+              { trialDays },
+            )}
       </Paragraph>
 
       <Section style={{ margin: "28px 0 8px" }}>
         <Button href={billingRequired
           ? `${brand.appUrl.replace(/\/$/, "")}/login?next=%2Fsettings%3Ftab%3Dbilling`
           : brand.appUrl}>
-          {billingRequired ? "Review billing and start your trial" : "Open your dashboard"}
+          {billingRequired
+            ? t("Review billing and start your trial")
+            : t("Open your dashboard")}
         </Button>
       </Section>
 
       <InfoCard tone="brand">
-        <Label>Get started</Label>
-        {STEPS.map((s, i) => (
+        <Label>{t("Get started")}</Label>
+        {steps.map((s, i) => (
           <Text
             key={i}
             style={{
@@ -75,7 +97,7 @@ export function WelcomeEmail({
       </InfoCard>
 
       <Paragraph muted>
-        Questions? Just reply to this email — it reaches a real person.
+        {t("Questions? Just reply to this email — it reaches a real person.")}
       </Paragraph>
     </EmailLayout>
   );
