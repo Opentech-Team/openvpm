@@ -1,0 +1,44 @@
+# Demo deployment on a single small host, layered on docker-compose.yml:
+#
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.demo.yml \
+#     --env-file docker/.env.demo up -d --build
+#
+# docker/.env.demo is not versioned; see docker/.env.demo.example.
+# - Postgres and MinIO only listen on 127.0.0.1 (the base file publishes them).
+# - Secrets and passwords come from the env file instead of the dev defaults.
+# - UI language and the build heap size are build args.
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+
+  minio:
+    ports: !override
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+
+  minio-bootstrap:
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 openpims $${MINIO_ROOT_PASSWORD}; do
+        sleep 1;
+      done;
+      mc mb --ignore-existing local/openpims;
+      "
+    environment:
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  web:
+    build:
+      args:
+        NEXT_PUBLIC_OPENVPM_LANGUAGE: ${OPENVPM_LANGUAGE:-es-VE}
+        NODE_OPTIONS: ${BUILD_NODE_OPTIONS:---max-old-space-size=3072}
+    environment:
+      DATABASE_URL: postgresql://openpims:${POSTGRES_PASSWORD}@postgres:5432/openpims
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?set NEXTAUTH_URL}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
