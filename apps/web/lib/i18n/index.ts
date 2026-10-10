@@ -7,22 +7,52 @@
  *   (default "en"). It is independent of the clinic's country, currency and
  *   formatting locale.
  * - Catalogs contain user-facing text only — no tax, legal or clinical rules.
+ * - A regional language ("es-VE") is a small terminology layer on top of its
+ *   base language ("es"): lookups go es-VE → es → English.
  */
+import es from "./messages/es.json";
+import esVE from "./messages/es-VE.json";
 import ja from "./messages/ja.json";
 
 type Catalog = Record<string, string>;
 
+/** Catalogs by lower-case BCP 47 tag. */
 const CATALOGS: Record<string, Catalog> = {
+  es: es as Catalog,
+  "es-ve": esVE as Catalog,
   ja: ja as Catalog,
+};
+
+/** Tags reported to the browser and to Intl for each supported UI language. */
+const LANGUAGE_TAGS: Record<string, { html: string; locale: string }> = {
+  es: { html: "es-419", locale: "es-419" },
+  "es-ve": { html: "es-VE", locale: "es-VE" },
+  ja: { html: "ja", locale: "ja-JP" },
 };
 
 export const UI_LANGUAGE = (process.env.NEXT_PUBLIC_OPENVPM_LANGUAGE ?? "en")
   .trim()
   .toLowerCase();
 
+/**
+ * Catalogs to search, most specific first: "es-ve" → ["es-ve", "es"].
+ * Unknown languages resolve to no catalogs, so the English text is shown.
+ */
+export function catalogChain(language: string = UI_LANGUAGE): Catalog[] {
+  const parts = language.split("-");
+  const chain: Catalog[] = [];
+  for (let i = parts.length; i > 0; i--) {
+    const catalog = CATALOGS[parts.slice(0, i).join("-")];
+    if (catalog) chain.push(catalog);
+  }
+  return chain;
+}
+
+const ACTIVE_CHAIN = catalogChain();
+
 /** BCP 47 tag for <html lang>. */
 export function htmlLang(): string {
-  return CATALOGS[UI_LANGUAGE] ? UI_LANGUAGE : "en";
+  return LANGUAGE_TAGS[UI_LANGUAGE]?.html ?? "en";
 }
 
 /**
@@ -30,7 +60,15 @@ export function htmlLang(): string {
  * so a Japanese UI does not mix in US-formatted dates ("Sep 29, 2026").
  */
 export function uiLocale(): string {
-  return UI_LANGUAGE === "ja" ? "ja-JP" : "en-US";
+  return LANGUAGE_TAGS[UI_LANGUAGE]?.locale ?? "en-US";
+}
+
+/** Look a message up through a catalog chain; undefined when untranslated. */
+export function lookup(message: string, chain: Catalog[] = ACTIVE_CHAIN): string | undefined {
+  for (const catalog of chain) {
+    if (Object.prototype.hasOwnProperty.call(catalog, message)) return catalog[message];
+  }
+  return undefined;
 }
 
 /**
@@ -38,9 +76,8 @@ export function uiLocale(): string {
  * Falls back to the English message when no translation exists.
  */
 export function tx(message: string, vars?: Record<string, string | number>): string {
-  const catalog = CATALOGS[UI_LANGUAGE];
   // An explicitly empty translation is allowed (e.g. the English plural suffix "s" has no Japanese equivalent).
-  const translated = catalog && Object.prototype.hasOwnProperty.call(catalog, message) ? catalog[message] : undefined;
+  const translated = lookup(message);
   let out = translated !== undefined ? translated : message;
   if (vars) {
     out = out.replace(/\{(\w+)\}/g, (whole, key: string) =>
