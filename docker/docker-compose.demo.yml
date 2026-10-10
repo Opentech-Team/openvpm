@@ -52,8 +52,29 @@ services:
       args:
         NEXT_PUBLIC_OPENVPM_LANGUAGE: ${OPENVPM_LANGUAGE:-es-VE}
         NODE_OPTIONS: ${BUILD_NODE_OPTIONS:---max-old-space-size=3072}
+    # Only reachable through the HTTPS proxy: the app's CSP upgrades every
+    # request to https, so plain http on :3000 cannot load its assets.
+    ports: !override
+      - "127.0.0.1:3000:3000"
     environment:
       DATABASE_URL: postgresql://openpims:${POSTGRES_PASSWORD}@postgres:5432/openpims
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:?set NEXTAUTH_URL}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+
+  # HTTPS in front of the app with an automatic Let's Encrypt certificate.
+  # DEMO_HOST must resolve to this server (e.g. 203-0-113-7.sslip.io).
+  https:
+    image: caddy:2
+    restart: unless-stopped
+    command: caddy reverse-proxy --from ${DEMO_HOST:?set DEMO_HOST} --to web:3000
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
