@@ -4,8 +4,11 @@
 #     --env-file docker/.env.demo up -d --build
 #
 # docker/.env.demo is not versioned; see docker/.env.demo.example.
-# - Postgres and MinIO only listen on 127.0.0.1 (the base file publishes them).
+# - Postgres and object storage only listen on 127.0.0.1 (the base file publishes them).
 # - Secrets and passwords come from the env file instead of the dev defaults.
+# - MinIO no longer publishes free images (docker.io and quay.io refuse the pull),
+#   so the S3 service runs SeaweedFS, as the Japanese localization
+#   (katsushi2441/openvpm-jp) does. The service keeps the name "minio".
 # - UI language and the build heap size are build args.
 services:
   postgres:
@@ -15,22 +18,34 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
 
   minio:
+    image: chrislusf/seaweedfs:latest
+    entrypoint: !override
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /etc/seaweedfs
+        printf '{"identities":[{"name":"openpims","credentials":[{"accessKey":"openpims","secretKey":"%s"}],"actions":["Admin","Read","List","Tagging","Write"]}]}' "$$S3_SECRET" > /etc/seaweedfs/s3.json
+        exec weed server -dir=/data -s3 -s3.port=9000 -s3.config=/etc/seaweedfs/s3.json
+    command: !reset []
+    environment: !override
+      S3_SECRET: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+    volumes: !override
+      - minio_data:/data
     ports: !override
       - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
-    environment:
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
 
   minio-bootstrap:
-    entrypoint: >
-      /bin/sh -c "
-      until mc alias set local http://minio:9000 openpims $${MINIO_ROOT_PASSWORD}; do
-        sleep 1;
-      done;
-      mc mb --ignore-existing local/openpims;
-      "
-    environment:
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    image: chrislusf/seaweedfs:latest
+    depends_on: !override
+      minio:
+        condition: service_started
+    entrypoint: !override
+      - /bin/sh
+      - -c
+      - |
+        until echo "s3.bucket.list" | weed shell -master=minio:9333 >/dev/null 2>&1; do sleep 2; done
+        echo "s3.bucket.create -name openpims" | weed shell -master=minio:9333
+        echo "s3.bucket.list" | weed shell -master=minio:9333
 
   web:
     build:
