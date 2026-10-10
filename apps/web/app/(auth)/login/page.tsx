@@ -149,8 +149,8 @@ function LoginPageInner() {
         {!DEMO_MODE && (checkoutState === "success" || checkoutState === "cancelled") && (
           <div role="status" className="mb-6 rounded-md border border-primary/20 bg-primary/5 p-4 text-sm leading-6">
             {checkoutState === "success"
-              ? "Checkout completed. Sign in to open your clinic workspace. Your billing status updates after Stripe confirms checkout."
-              : "Your account is saved, but your trial has not started. Sign in to resume secure checkout in Plan & Billing. No subscription charge was made."}
+              ? tx("Checkout completed. Sign in to open your clinic workspace. Your billing status updates after Stripe confirms checkout.")
+              : tx("Your account is saved, but your trial has not started. Sign in to resume secure checkout in Plan & Billing. No subscription charge was made.")}
           </div>
         )}
 
