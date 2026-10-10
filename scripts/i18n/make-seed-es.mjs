@@ -76,6 +76,22 @@ edits.sort((a, b) => b.start - a.start);
 let output = source;
 for (const e of edits) output = output.slice(0, e.start) + e.text + output.slice(e.end);
 
+// Visible template literals with ${...} parts: exact source-text replacements.
+const TEMPLATES = [
+  [
+    "`Patient recovered well. Post-op monitoring for ${Math.floor(proc.durationMinutes / 2)} minutes. Discharged with standard post-operative instructions.`",
+    "`El paciente se recuperó bien. Monitoreo posoperatorio durante ${Math.floor(proc.durationMinutes / 2)} minutos. Se dio de alta con las indicaciones posoperatorias habituales.`",
+  ],
+  [
+    "`Hi ${someClients[i]!.firstName}, this is Neighborhood Veterinary reminding you of your appointment tomorrow. Reply C to confirm or R to reschedule.`",
+    "`Hola, ${someClients[i]!.firstName}. Le escribimos de la Clínica Veterinaria Los Samanes para recordarle su cita de mañana. Responda C para confirmar o R para reprogramar.`",
+  ],
+];
+for (const [from, to] of TEMPLATES) {
+  if (!output.includes(from)) console.warn(`template not found (seed.ts changed?): ${from.slice(0, 60)}…`);
+  output = output.replace(from, to);
+}
+
 const header =
   "// Spanish (Latin America) demo clinic. Generated from seed.ts by\n" +
   "// scripts/i18n/make-seed-es.mjs and scripts/i18n/seed_es_strings.json — do not edit by hand.\n";
