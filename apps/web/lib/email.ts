@@ -13,7 +13,7 @@ import {
   emailPreferenceRecipientHash,
 } from "@/lib/email-preferences";
 import { billingEnforced } from "@/lib/billing/plans";
-import { tx } from "@/lib/i18n";
+import { htmlLang, tx } from "@/lib/i18n";
 import {
   defaultEmailFrom,
   emailDemoMode,
@@ -77,7 +77,7 @@ function emailLayout(
   footer?: string,
 ): string {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${htmlLang()}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -103,7 +103,7 @@ function emailLayout(
           <!-- Footer -->
           <tr>
             <td style="padding:24px 32px;background-color:#f9fafb;border-top:1px solid #e5e7eb;">
-              ${footer || `<p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">This email was sent by ${practiceName}. If you received this in error, please disregard it.</p>`}
+              ${footer || `<p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">${tx("This email was sent by {practiceName}. If you received this in error, please disregard it.", { practiceName })}</p>`}
             </td>
           </tr>
         </table>
@@ -124,6 +124,11 @@ function practiceFooter(opts: {
   if (opts.practicePhone) lines.push(opts.practicePhone);
   if (opts.practiceAddress) lines.push(opts.practiceAddress);
   return `<p style="margin:0;color:#6b7280;font-size:13px;line-height:1.6;">${lines.join("<br/>")}</p>`;
+}
+
+/** Bold a dynamic value inside a translated sentence. */
+function strong(value: string): string {
+  return `<strong>${value}</strong>`;
 }
 
 function ctaButton(label: string, url: string): string {
@@ -313,20 +318,20 @@ export async function sendAppointmentReminder(data: {
   practiceAddress?: string;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.clientName},</p>
-    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">This is a friendly reminder about an upcoming appointment for <strong>${data.patientName}</strong>.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.clientName })}</p>
+    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${tx("This is a friendly reminder about an upcoming appointment for {patient}.", { patient: strong(data.patientName) })}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background-color:#f0fdfa;border:1px solid #ccfbf1;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Date</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Date")}</p>
           <p style="margin:0 0 16px;color:#0f172a;font-size:18px;font-weight:600;">${data.appointmentDate}</p>
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Time</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Time")}</p>
           <p style="margin:0;color:#0f172a;font-size:18px;font-weight:600;">${data.appointmentTime}</p>
         </td>
       </tr>
     </table>
-    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">If you need to cancel or reschedule, please call us${data.practicePhone ? ` at <strong>${data.practicePhone}</strong>` : ""} as soon as possible.</p>
-    <p style="margin:24px 0 0;color:#111827;font-size:15px;line-height:1.6;">We look forward to seeing you and ${data.patientName}!</p>
+    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">${data.practicePhone ? tx("If you need to cancel or reschedule, please call us at {phone} as soon as possible.", { phone: strong(data.practicePhone) }) : tx("If you need to cancel or reschedule, please call us as soon as possible.")}</p>
+    <p style="margin:24px 0 0;color:#111827;font-size:15px;line-height:1.6;">${tx("We look forward to seeing you and {patient}!", { patient: data.patientName })}</p>
   `;
 
   const footer = practiceFooter({
@@ -363,21 +368,21 @@ export async function sendVaccinationReminder(data: {
   practicePhone?: string;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.clientName},</p>
-    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">It's time to schedule <strong>${data.patientName}</strong>'s <strong>${data.vaccineName}</strong> vaccination.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.clientName })}</p>
+    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${tx("It's time to schedule {patient}'s {vaccine} vaccination.", { patient: strong(data.patientName), vaccine: strong(data.vaccineName) })}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background-color:#fffbeb;border:1px solid #fef3c7;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Vaccine</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Vaccine")}</p>
           <p style="margin:0 0 16px;color:#0f172a;font-size:18px;font-weight:600;">${data.vaccineName}</p>
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Due Date</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Due Date")}</p>
           <p style="margin:0;color:#0f172a;font-size:18px;font-weight:600;">${data.dueDate}</p>
         </td>
       </tr>
     </table>
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Please contact us${data.practicePhone ? ` at <strong>${data.practicePhone}</strong>` : ""} to schedule an appointment for ${data.patientName}.</p>
-    ${ctaButton("Schedule Your Pet's Appointment", `tel:${data.practicePhone || ""}`)}
-    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">Keeping vaccinations up to date is important for your pet's health and safety.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${data.practicePhone ? tx("Please contact us at {phone} to schedule an appointment for {patient}.", { phone: strong(data.practicePhone), patient: data.patientName }) : tx("Please contact us to schedule an appointment for {patient}.", { patient: data.patientName })}</p>
+    ${ctaButton(tx("Schedule Your Pet's Appointment"), `tel:${data.practicePhone || ""}`)}
+    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">${tx("Keeping vaccinations up to date is important for your pet's health and safety.")}</p>
   `;
 
   const footer = practiceFooter({
@@ -415,19 +420,19 @@ export async function sendCareReminder(data: {
   idempotencyKey: string;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.clientName},</p>
-    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">This is a reminder from our veterinary team about <strong>${data.patientName}</strong>.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.clientName })}</p>
+    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${tx("This is a reminder from our veterinary team about {patient}.", { patient: strong(data.patientName) })}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background-color:#f0fdfa;border:1px solid #ccfbf1;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Reminder</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Reminder")}</p>
           <p style="margin:0 0 16px;color:#0f172a;font-size:18px;font-weight:600;">${data.reminderTitle}</p>
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Reminder Date</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Reminder Date")}</p>
           <p style="margin:0;color:#0f172a;font-size:18px;font-weight:600;">${data.dueDate}</p>
         </td>
       </tr>
     </table>
-    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">Please contact us${data.practicePhone ? ` at <strong>${data.practicePhone}</strong>` : ""} if you have questions or would like to schedule.</p>
+    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">${data.practicePhone ? tx("Please contact us at {phone} if you have questions or would like to schedule.", { phone: strong(data.practicePhone) }) : tx("Please contact us if you have questions or would like to schedule.")}</p>
   `;
 
   const html = emailLayout(
@@ -464,29 +469,25 @@ export async function sendInvoiceEmail(data: {
   practiceName: string;
   practicePhone?: string;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
-  const patientLine = data.patientName
-    ? ` for <strong>${data.patientName}</strong>`
-    : "";
-
   const dueDateBlock = data.dueDate
-    ? `<p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Due Date</p>
+    ? `<p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Due Date")}</p>
        <p style="margin:0;color:#0f172a;font-size:16px;font-weight:600;">${data.dueDate}</p>`
     : "";
 
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.clientName},</p>
-    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">Here is your invoice${patientLine} from ${data.practiceName}.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.clientName })}</p>
+    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${data.patientName ? tx("Here is your invoice for {patient} from {practiceName}.", { patient: strong(data.patientName), practiceName: data.practiceName }) : tx("Here is your invoice from {practiceName}.", { practiceName: data.practiceName })}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background-color:#f0fdf4;border:1px solid #dcfce7;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Amount Due</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Amount Due")}</p>
           <p style="margin:0${data.dueDate ? " 0 16px" : ""};color:#0f172a;font-size:28px;font-weight:700;">${data.invoiceTotal}</p>
           ${dueDateBlock}
         </td>
       </tr>
     </table>
-    ${data.portalUrl ? ctaButton("View in Portal", data.portalUrl) : ""}
-    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">If you have any questions about this invoice, please contact us${data.practicePhone ? ` at <strong>${data.practicePhone}</strong>` : ""}.</p>
+    ${data.portalUrl ? ctaButton(tx("View in Portal"), data.portalUrl) : ""}
+    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">${data.practicePhone ? tx("If you have any questions about this invoice, please contact us at {phone}.", { phone: strong(data.practicePhone) }) : tx("If you have any questions about this invoice, please contact us.")}</p>
   `;
 
   const footer = practiceFooter({
@@ -522,27 +523,24 @@ export async function sendClientPaymentReceiptEmail(data: {
   practiceName: string;
   practicePhone?: string;
 }): Promise<{ success: boolean; id?: string; error?: string }> {
-  const patientLine = data.patientName
-    ? ` for <strong>${data.patientName}</strong>`
-    : "";
   const balanceBlock = data.fullyPaid
-    ? `<p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">This invoice is paid in full.</p>`
-    : `<p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Remaining Balance</p>
+    ? `<p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${tx("This invoice is paid in full.")}</p>`
+    : `<p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Remaining Balance")}</p>
        <p style="margin:0;color:#0f172a;font-size:16px;font-weight:600;">${data.balanceRemaining}</p>`;
 
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.clientName},</p>
-    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">We got your payment${patientLine}. Thank you!</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.clientName })}</p>
+    <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${data.patientName ? tx("We got your payment for {patient}. Thank you!", { patient: strong(data.patientName) }) : tx("We got your payment. Thank you!")}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background-color:#f0fdf4;border:1px solid #dcfce7;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Amount Paid</p>
+          <p style="margin:0 0 4px;color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${tx("Amount Paid")}</p>
           <p style="margin:0 0 16px;color:#0f172a;font-size:28px;font-weight:700;">${data.amountPaid}</p>
           ${balanceBlock}
         </td>
       </tr>
     </table>
-    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">Keep this email for your records. If anything looks wrong, please contact us${data.practicePhone ? ` at <strong>${data.practicePhone}</strong>` : ""}.</p>
+    <p style="margin:0;color:#111827;font-size:15px;line-height:1.6;">${data.practicePhone ? tx("Keep this email for your records. If anything looks wrong, please contact us at {phone}.", { phone: strong(data.practicePhone) }) : tx("Keep this email for your records. If anything looks wrong, please contact us.")}</p>
   `;
 
   const footer = practiceFooter({
@@ -575,10 +573,10 @@ interface VerificationEmailData {
 
 function verificationEmailContent(data: VerificationEmailData) {
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.name},</p>
-    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">Welcome to OpenVPM! Please confirm your email address to secure your workspace and keep important account messages deliverable.</p>
-    ${ctaButton("Confirm email", data.verifyUrl)}
-    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">This link expires in 24 hours. If you didn't create an OpenVPM account, you can ignore this email.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.name })}</p>
+    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">${tx("Welcome to OpenVPM! Please confirm your email address to secure your workspace and keep important account messages deliverable.")}</p>
+    ${ctaButton(tx("Confirm email"), data.verifyUrl)}
+    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">${tx("This link expires in 24 hours. If you didn't create an OpenVPM account, you can ignore this email.")}</p>
   `;
   const html = emailLayout("OpenVPM", body);
   return { subject: tx("Verify your OpenVPM email"), html };
@@ -620,10 +618,10 @@ export async function sendPasswordResetEmail(data: {
   resetUrl: string;
 }): Promise<{ success: boolean }> {
   const body = `
-    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">Hi ${data.name},</p>
-    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">We received a request to reset your OpenVPM password. Click below to choose a new one.</p>
-    ${ctaButton("Reset my password", data.resetUrl)}
-    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email — your password won't change.</p>
+    <p style="margin:0 0 16px;color:#111827;font-size:15px;line-height:1.6;">${tx("Hi {name},", { name: data.name })}</p>
+    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">${tx("We received a request to reset your OpenVPM password. Click below to choose a new one.")}</p>
+    ${ctaButton(tx("Reset my password"), data.resetUrl)}
+    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">${tx("This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email — your password won't change.")}</p>
   `;
   const html = emailLayout("OpenVPM", body);
   const result = await sendEmail({
@@ -642,10 +640,10 @@ export async function sendStaffInviteEmail(data: {
   idempotencyKey?: string;
 }): Promise<{ success: boolean }> {
   const body = `
-    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;"><strong>${data.inviterName}</strong> has invited you to join <strong>${data.practiceName}</strong> on OpenVPM.</p>
-    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">Accept the invite below to set your password and activate your account.</p>
-    ${ctaButton("Accept invite", data.inviteUrl)}
-    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">This link expires in 72 hours. If you weren't expecting this invitation, you can safely ignore this email.</p>
+    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">${tx("{inviter} has invited you to join {practiceName} on OpenVPM.", { inviter: strong(data.inviterName), practiceName: strong(data.practiceName) })}</p>
+    <p style="margin:0 0 8px;color:#111827;font-size:15px;line-height:1.6;">${tx("Accept the invite below to set your password and activate your account.")}</p>
+    ${ctaButton(tx("Accept invite"), data.inviteUrl)}
+    <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.5;">${tx("This link expires in 72 hours. If you weren't expecting this invitation, you can safely ignore this email.")}</p>
   `;
   const html = emailLayout(data.practiceName, body);
   const result = await sendEmail({
