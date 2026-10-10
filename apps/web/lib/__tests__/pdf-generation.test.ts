@@ -99,7 +99,7 @@ describe("pdf generation date labels", () => {
     expect(source).toContain("generatedDate?: string;");
     expect(source).toContain("function formatGeneratedDateUtc()");
     expect(source).toContain(
-      'return new Date().toLocaleDateString("en-US", { timeZone: "UTC" })',
+      'return new Date().toLocaleDateString(uiLocale(), { timeZone: "UTC" })',
     );
     expect(source).toContain(
       "const generatedDate = data.generatedDate ?? formatGeneratedDateUtc()",
@@ -133,10 +133,10 @@ describe("pdf generation date labels", () => {
       'orientation: data.columns.length > 4 ? "landscape" : "portrait"',
     );
     expect(source).toContain("data.columns.forEach((column, index) =>");
-    expect(source).toContain(
-      'doc.text(data.emptyMessage ?? "No report data available.", margin, y)',
+    expect(source).toMatch(
+      /doc\.text\(\s*data\.emptyMessage \?\? "No report data available\.",\s*margin,\s*y,?\s*\)/,
     );
-    expect(source).toContain("doc.text(`Page ${i} of ${pageCount}`");
+    expect(source).toMatch(/doc\.text\(\s*`Page \$\{i\} of \$\{pageCount\}`/);
   });
 });
 

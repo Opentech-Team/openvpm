@@ -10,8 +10,36 @@ import { syncBuiltinESMExports } from "node:module";
 
 const CALL = String.raw`(?:tx|txUi)\(("(?:[^"\\]|\\.)*")\)`;
 
-export function unwrapCatalogCalls(source: string): string {
+// tx("Generated on {date}", { date: generatedDate }) -> `Generated on ${generatedDate}`
+// so tests that read pdf.ts-style source can still assert the interpolated English.
+const CALL_WITH_VARS = String.raw`(?:tx|txUi)\(("(?:[^"\\]|\\.)*"),\s*\{([^{}]*)\}\s*,?\s*\)`;
+
+function unwrapCallsWithVars(source: string): string {
+  return source.replace(new RegExp(CALL_WITH_VARS, "g"), (_whole, lit: string, vars: string) => {
+    const exprs = new Map<string, string>();
+    for (const entry of vars.split(/,(?![^()]*\))/)) {
+      const m = /^\s*(\w+)\s*(?::\s*([\s\S]+?))?\s*$/.exec(entry);
+      if (!m) continue;
+      exprs.set(m[1]!, (m[2] ?? m[1]!).trim());
+    }
+    const text = (JSON.parse(lit) as string).replace(/\{(\w+)\}/g, (token, key: string) =>
+      exprs.has(key) ? "${" + exprs.get(key) + "}" : token,
+    );
+    return "`" + text + "`";
+  });
+}
+
+// packages/email takes its translator as a prop named `t` (so the package does
+// not depend on apps/web): t("Hi {name},", { name }) / t("Resume setup"). Rewrite
+// those calls to tx(...) so the unwrapping below applies to them as well.
+function normalizeEmailTranslatorCalls(source: string): string {
   return source
+    .replace(/(?<![\w.$])t\(\s*("(?:[^"\\]|\\.)*")\s*,?\s*\)/g, "tx($1)")
+    .replace(/(?<![\w.$])t\((?=\s*"(?:[^"\\]|\\.)*"\s*,\s*\{)/g, "tx(");
+}
+
+export function unwrapCatalogCalls(source: string): string {
+  return unwrapCallsWithVars(source)
     .replace(new RegExp(String.raw`=\{` + CALL + String.raw`\}`, "g"), (_m, lit: string) => `=${lit}`)
     .replace(new RegExp(String.raw`\{" "\}\{` + CALL + String.raw`\}\{" "\}`, "g"), (_m, lit: string) => ` ${JSON.parse(lit)} `)
     .replace(new RegExp(String.raw`\{" "\}\{` + CALL + String.raw`\}`, "g"), (_m, lit: string) => ` ${JSON.parse(lit)}`)
@@ -31,7 +59,8 @@ const original = fs.readFileSync;
   const out = (original as any).call(this, file, ...rest);
   const name = typeof file === "string" ? file : file instanceof URL ? file.pathname : "";
   if (typeof out === "string" && /\.(tsx|ts)$/.test(name) && !name.includes("__tests__")) {
-    return unwrapCatalogCalls(out);
+    const normalized = /[\\/]packages[\\/]email[\\/]/.test(name) ? normalizeEmailTranslatorCalls(out) : out;
+    return unwrapCatalogCalls(normalized);
   }
   return out;
 };
